@@ -1,7 +1,13 @@
 package checkout;
 
+import checkout.offer.Offer;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+
 public class CheckoutService {
 
+    private ArrayList<Offer> offers = new ArrayList<>();
     private Check check;
 
     public void openCheck() {
@@ -17,22 +23,15 @@ public class CheckoutService {
 
     public Check closeCheck() {
         Check closedCheck = check;
+        for (Offer offer : offers) {
+            offer.apply(check);
+        }
+        offers.clear();
         check = null;
         return closedCheck;
     }
 
     public void useOffer(Offer offer) {
-        offer.apply(check);
-        if (offer instanceof FactorByCategoryOffer) {
-            FactorByCategoryOffer fbOffer = (FactorByCategoryOffer) offer;
-            int points = check.getCostByCategory(fbOffer.category);
-            check.addPoints(points * (fbOffer.factor - 1));
-        } else {
-            if (offer instanceof AnyGoodsOffer) {
-                AnyGoodsOffer agOffer = (AnyGoodsOffer) offer;
-                if (agOffer.totalCost <= check.getTotalCost())
-                    check.addPoints(agOffer.points);
-            }
-        }
+        offers.add(offer);
     }
 }
